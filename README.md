@@ -20,6 +20,7 @@ Inputs:
 # 5.  Open 'Create_Profiles.R':
       - alter profile_spacing: this is the spacing along the fault in metres
       - alter profile_point_spacing: this is the spacing of points along the elevation profiles in metres. The minimum spacing         should be the resolution of your DEM. The algorithm uses a nearest neighbours technique to interpolate the elevations         along the profiles. 
+      - alter profile_half_width: this is in metres, and will be the half-width of the elevation profiles
       - run 
       
 # 6.  Open 'App_Manual_Profiles.R':
