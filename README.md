@@ -6,7 +6,7 @@ Inputs:
       2. tif file of DEM
       
 # 1.  Run 'Run_first_once-SETUP.R' a few times to install all the packages correctly:
-     - run multiple times to install the packages correctly, until you get a printout message 
+     - may have to run multiple times to install the packages correctly, until you get a printout message 
 
 # 2.  Add your folder containing fault shp file to Faults folder
 
