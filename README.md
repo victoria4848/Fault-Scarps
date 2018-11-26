@@ -22,10 +22,10 @@ Inputs:
       - alter profile_point_spacing: this is the spacing of points along the elevation profiles in metres. The minimum spacing         should be the resolution of your DEM. The algorithm uses a nearest neighbours technique to interpolate the elevations         along the profiles. 
       - run 
       
-# 6.  Open 'App_manual_profiles.R':
+# 6.  Open 'App_Manual_Profiles.R':
       -  Follow app instructions
 
-# 7.  Open 'Find_offsets.R':
+# 7.  Open 'Find_Offsets.R':
       - Enter the spacing that you chose in finding manual profiles
       - Change range and step for slope, curvature, and steep in a row 
             -- slope sets the minimum slope above which a location in the elevation profile is considered 'steep' and could be                a scarp
