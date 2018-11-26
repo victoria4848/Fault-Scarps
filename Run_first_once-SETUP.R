@@ -27,6 +27,7 @@ if (!dir.exists('Fault-Scarps-master/Faults')){
   dir.create('Fault-Scarps-master/Profiles')  # To store the created profiles
   # Create folders for storing outputs from finding crest and base 
   dir.create('Fault-Scarps-master/Manual_profiles_offsets')
+  dir.create('Fault-Scarps-master/Manual_crba')
   dir.create('Fault-Scarps-master/Offsets')
   dir.create('Fault-Scarps-master/Plots')
   dir.create('Fault-Scarps-master/rms_difs')
