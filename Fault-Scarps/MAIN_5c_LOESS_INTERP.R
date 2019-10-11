@@ -1,4 +1,4 @@
-#MAIN_4c_smoothedBins, Loess, after interpolation
+# MAIN_5c_smoothedBins, Loess, after interpolation
 
 plot_list <- list()
 
@@ -6,44 +6,9 @@ nnn <- 0
 for (i in i_choices){ 
   nnn <- nnn + 1
   fault_name        <- fault_name_list[i]
-  cc_colm <- cc_col_valsm[[i]]
-  bw_colm <- bw_col_valsm[[i]]
-  cc_cold <- cc_col_valsd[[i]]
-  bw_cold <- bw_col_valsd[[i]]
-  print(paste0('MAIN_4c_LOESS ',fault_name))
-  
-  # SOIL distances for distance plot
-  f_dist.df <-readRDS(paste0(main_results_dir,'/Soil_fault_dfs/',   fault_name,'_f_dist.df.RDS')) 
-  f_dist.df$width <- f_dist.df$xmax - f_dist.df$xmin
-  f_dist.df$Quaternary_english_simp[is.na(f_dist.df$Quaternary_english_simp)] <- 'Till'
-  if (nrow(f_dist.df)>1){# If adjacent rectangles have same Quaternary, make one bigger rectangle
-    n <- 1
-    for (j in 2:nrow(f_dist.df)){
-      n <- n + 1
-      if (f_dist.df$Quaternary_english_simp[n-1] == f_dist.df$Quaternary_english_simp[n]){
-        f_dist.df$xmax[n-1]=f_dist.df$xmax[n]
-        f_dist.df <- f_dist.df[-n,]
-        n  <- n  - 1
-      }
-    }
-    if (nrow(f_dist.df)>1){
-      n <- 1
-      for (j in 2:nrow(f_dist.df)){
-        n <- n + 1
-        if (f_dist.df$xmax[n-1]-f_dist.df$xmin[n-1] < 10){   # Remove areas that are less than 10 m across
-          f_dist.df$xmin[n] <- f_dist.df$xmin[n-1]
-          f_dist.df <- f_dist.df[-(n-1),]
-          n  <- n  - 1
-        }
-      }
-    }
-  }
-  # Make factor to be in correct order
-  f_dist.df$Quaternary_english_simp <- factor(f_dist.df$Quaternary_english_simp, 
-                                              levels = c('Bedrock','Till','Peat','Sand','Water'))
-  
- 
-  saveRDS(f_dist.df,paste0(main_results_dir,'/Soil_fault_dfs/',   fault_name,'_f_dist.df.RDS')) 
+
+  print(paste0('MAIN_5c_LOESS ',fault_name))
+
   
   # Data after subsetted by confidence values 
   height_pl_bF_s_list     <- readRDS ( paste0 ( main_results_dir , '/' , off_pla_dir , '/' , fault_name , '_offsets_planes.RDS') )
@@ -93,7 +58,7 @@ for (i in i_choices){
   new_dists_v   <- unlist(new_dists)
   new_offsets_v <- unlist(new_offsets)
   new_confids_v <- unlist(new_confids)
-  height_offset <- data.frame(new_offsets_v=new_offsets_v,new_dists_v=new_dists_v,new_confids_v=new_confids_v)
+  height_offset <- data_frame(new_offsets_v=new_offsets_v,new_dists_v=new_dists_v,new_confids_v=new_confids_v)
   
   # Look over 250 m
   span1      <- 250 / max ( height_offset$new_dists_v ) # Should be about 0.1 for short faults and lower for larger faults 
@@ -151,11 +116,9 @@ for (i in i_choices){
   
   p_loess <-  ggplot() +   #Span of 0.1 and 0.5 
     geom_errorbar( data = sd.df,          aes ( x = d_km , ymin = ymin , ymax = ymax ) , width=0.075*sd.df$d_km/5 , size = 0.6 , color='red' ) + 
-    geom_rect    ( data = f_dist.df ,     aes ( xmin = xmin/1000 , xmax = xmax/1000 , ymin = ymin , ymax = ymax , group = rect.id, fill = Quaternary_english_simp), alpha=0.25)+
     geom_point   ( data = ho_orig ,       aes ( x = d_km , y = offset,color=confid )   , size = 0.7 ) +
     geom_path    ( data = height_offset , aes ( x = d_km , y = smA )  ,color = 'red'   , size = 0.6 ) +
     geom_path    ( data = height_offset , aes ( x = d_km , y = sm50 ) ,color = 'black' , size = 0.6 ) +
-    scale_fill_manual(values = cc_cold,name='Quat.') +
     scale_colour_viridis_c (name = 'Conf.', guide = 'legend') +
     xlab ( 'Distance along Fault, km' ) + 
     ylab ( 'Offset, m' ) +
@@ -190,4 +153,8 @@ for (i in i_choices){
   
 }
 
-saveRDS(plot_list, 'Results/p_loess_plots.RDS')
+saveRDS(plot_list, 'Figures/p_loess_plots.RDS')
+
+
+
+

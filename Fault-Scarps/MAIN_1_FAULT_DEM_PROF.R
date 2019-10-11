@@ -22,7 +22,7 @@ for (i in i_choices) {
   
   
   # 2. ============================ RIVERS ====================================================================== #
-  if (file.exists(paste0('Data/Rivers/' , fault_name , '_rivers.shp'))){
+  if (file.exists(paste0('Data/Rivers/' ,fault_name,'/', fault_name , '_rivers.shp'))){
     f1_river_distances ( fault_name , proj_all )    # Load marked rivers and distance along profiles. 
   }
   

@@ -59,12 +59,12 @@ source('Functions/f1_create_profiles.R')
 
 # For algorithm
 source('Functions/f1_segmented_profiles.R')
-source('Functions/f1_unique_fault_planes.R')
-source('Functions/f1_find_fault_plane.R')               
-source('Functions/f1_remove_multi_fault_planes.R')      
+source('Functions/f2_unique_fault_planes.R')
+source('Functions/f2_find_fault_plane.R')               
+source('Functions/f2_remove_multi_fault_planes.R')      
 
 # For overall plots 
-source('Functions/plot_multi_arrange.R')
+source('Functions/f4_plot_multi_arrange.R')
 
 
 ## Make mini functions

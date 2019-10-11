@@ -10,6 +10,7 @@
 # 1) Organizes data and sets parameters. 
 # 2) Calls 'MAIN SCRIPTS' which find offsets every n metres (where n = profile_spacing set above) and assign confidence values based on various criteria.
 # 3) If uncommented, and more parameters chosen, calls 'EXTRA SCRIPTS', which are further analyses e.g. summing offsets for overlapping fault strands, smoothing offsets, binning offsets etc.
+# 4) The end result should be two offset plots in the 'Figures' folder
 # ============================================================================================================= #
 
 
@@ -88,7 +89,7 @@ fault_name_list      <- fault_details$FaultNames
 downtoside_list      <- fault_details$DowntoSide
 
 i_choices <- 1:length(fault_name_list)  # Pick which faults in your fault_details list that you actually want to analyze
-
+i_choices <-1
 
 # Get projection to convert all data to. 
 fault_for_proj <- readOGR ( paste0 ( 'Data/Faults/',fault_name_for_proj) , fault_name_for_proj) # Load fault chosen to get projection from (set above)
@@ -103,6 +104,8 @@ source ( 'MAIN_2_FAULT_PLANE.R' )    # Find fault planes
 source ( 'MAIN_3_OFFSETS.R' )        # Find offsets and landscape planes from segmented profiles and found fault planes
 source ( 'MAIN_4_CVs.R' )            # Consider confidence values and remove offsets from profiles that get a confidence value less than 1sd below the mean confidence value
 # ===================================================================================================================== #
+
+
 
 
 # ===================================================================================================================== #
@@ -121,14 +124,9 @@ min_pdensity          <- 5   # points per 1000m
 smoothing_CV_weight   <- 1   # 
 overlap_dist_within_m <- 4   # metres
 
-source ( 'MAIN_4_SMOOTH_OFFSETS.R' )   # Add up offsets on different strands of fault, and then smooth offsets
-source ( 'MAIN_4b_SMOOTH_OFFSETS_BINS.R' )
-source ( 'MAIN_4c_LOESS_INTERP.R' )
-
-source ('MAIN_9_PLOT_QUAT_MAP.R') # check colors first
-source ('MAIN_8_FACET_PLOTS.R')  # Makes df with quaternary
-source ('MAIN_7_SLIP_DISTRIBUTIONS.R')
-source ('MAIN_13_PLOT_PROFILES.R')
+source ( 'MAIN_5a_SMOOTH_OFFSETS.R' )      # Add up offsets on different strands of fault, and then smooth offsets
+source ( 'MAIN_5b_SMOOTH_OFFSETS_BINS.R' ) # Bin offsets into different width bins 
+source ( 'MAIN_5c_LOESS_INTERP.R' )        # Smooth offset by Loess interpolation - can weight by confidence intervals 
 
 
 
@@ -146,10 +144,18 @@ source ('MAIN_13_PLOT_PROFILES.R')
 #   f1_DEM_merge_crop     : load, crop (if crop_opt = TRUE), and merge (if necessary) DEM
 #   f1_create_profiles    : create elevation / distance across faults profiles 
 #   f1_function_segmented_profiles_new  : create segmented profiles 
-#   f1_function_get_unique_fault_planes : find potential fault plane s
 # Outputs:
+#   profiles_list 
 
-# MAIN_2_OFFSETS.R
+# MAIN_2_FAULT_PLANE.R 
+# Inputs:
+#   profiles_list
+# Functions: 
+#   f2_function_get_unique_fault_planes : find potential fault planes
+#   f2_find_fault_planes                : find fault plane s
+#   f2_remove_multi_fault_planes        : remove multiple fault planes, so only one found per profile (nearest to centre)
+
+# MAIN_3_OFFSETS.R
 # Inputs: 
 #   Segmented planes,      seg_prof
 #   Distances along fault, scarp_distances,
@@ -159,10 +165,10 @@ source ('MAIN_13_PLOT_PROFILES.R')
 #   list of height offsets with confidence values for each profile, height_offset_list
 #   list of landscape planes found with their distance along fault, found_planes.df_list
 
-# MAIN_3_CVs.R
+# MAIN_4_CVs.R
 # Inputs: 
 # Functions:
-#   f3_plot_multi_arrange : plot profiles with found planes ordered by confidence values 
+#   f4_plot_multi_arrange : plot profiles with found planes ordered by confidence values 
 # Outputs:
 #   okp_orig
 #   list of height offsets, for the best faults
@@ -171,7 +177,7 @@ source ('MAIN_13_PLOT_PROFILES.R')
 
 
 
-# MAIN_4_SMOOTH_OFFSETS.R
+# MAIN_5a_SMOOTH_OFFSETS.R
 # Inputs: 
 # Outputs:
 

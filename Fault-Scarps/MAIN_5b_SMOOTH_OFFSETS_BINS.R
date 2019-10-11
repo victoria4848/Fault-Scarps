@@ -1,4 +1,4 @@
-#MAIN_4b_SMOOTH_OFFSETS_BINS
+# MAIN_5b_SMOOTH_OFFSETS_BINS
 
 bw_list <- c(seq(2,200,2), seq(210,500,10), seq(600,1000,50),1500,2000)
 bw_list <- c(seq(2,100,2), seq(110,500,10), seq(650,1000,50),seq(1100,5000,100),seq(6000,20000,1000)) # from Main_4b_SMOOTH_OFFSETS_BINS
@@ -7,7 +7,7 @@ bw_list <- c(seq(2,100,2), seq(110,500,10), seq(650,1000,50),seq(1100,5000,100),
 for (i in i_choices){ 
   fault_name        <- fault_name_list[i]
   
-  print(paste0('MAIN_4b_SMOOTH_OFFSETS_bins ',fault_name))
+  print(paste0('MAIN_5b_SMOOTH_OFFSETS_bins ',fault_name))
   
   # Data after subsetted by confidence values 
   height_pl_bF_s_list     <- readRDS ( paste0 ( main_results_dir , '/' , off_pla_dir , '/' , fault_name , '_offsets_planes.RDS') )

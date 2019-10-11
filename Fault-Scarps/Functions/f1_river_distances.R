@@ -4,9 +4,9 @@
 
 f1_river_distances <- function(fault_name,proj_all){
   
-  rivers_dir_t <- paste0('Data_Rivers/')
-  rivers_dir_R <- paste0('Data_Rivers_R/')
-  faults_dir_R <- paste0('Data_Faults_R/')
+  rivers_dir_t <- paste0('Data/Rivers/',fault_name)
+  rivers_dir_R <- paste0('Data/Rivers_R/')
+  faults_dir_R <- paste0('Data/Faults_R/')
   
   proj_all  <- crs( readRDS( paste0(faults_dir_R,fault_name,'.RDS'))[[2]] )
   

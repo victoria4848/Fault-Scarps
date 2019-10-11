@@ -1,20 +1,31 @@
-# Smooth profiles and create gaps in line etc. 
+# MAIN_5a_SMOOTH_OFFSETS
+
+# SCRIPT OUTLINE
+# 1. Load data
+# 2. Add together overlapping strands
+# 3. Keep places only where offsets have been found on both overlapping strands 
+# 4. Smooth profiles
+# 5. Remove smoothed offsets where there is no fault, is a river, or a very low density of offsets found
+# 6. Save results in 'Results/Profiles/' and 'Results/Offset_Planes/'
 
 
 for (i in i_choices){ 
   fault_name        <- fault_name_list[i]
   
-  print(paste0('MAIN_4_SMOOTH_OFFSET ',fault_name))
+  print(paste0('MAIN_5a_SMOOTH_OFFSET ',fault_name))
   
+  # 1. ======================= LOAD DATA++++++++ ================================================================= #
   # Data after subsetted by confidence values 
-  height_pl_bF_s_list     <- readRDS ( paste0 ( main_results_dir , '/' , off_pla_dir , '/' , fault_name , '_offsets_planes.RDS') )
-  height_offset           <- height_pl_bF_s_list[[5]]
+  height_pl_bF_s_list <- readRDS ( paste0 ( 'Results/Offset_Planes/' , fault_name , '_offsets_planes.RDS') )
+  height_offset       <- height_pl_bF_s_list[[5]]
   
+
+  
+  # 2. ======================= ADD OVERLAPPING STRANDS ============================================================= #
   # These are the same, then where they overlap they become summed or zero. First strand keeps the sum, second gets zero.
   height_offset$offset_CV_strands  <- height_offset$offset_CV
   height_offset$confid_n_strands   <- height_offset$confid_n
   
-  ##########################################
   ## ADD OVERLAPPING STRANDS 
   # For different branches - if ends overlap, add them together
   if (fault_name=='Pasmajarvi'){ # Remove annoying mini offset branch
@@ -44,6 +55,8 @@ for (i in i_choices){
   }
   height_offset           <- height_offset_all
   
+  
+  # 3. ======================= KEEP WHERE OFFSETS HAVE BEEN FOUND ===================================================== #
   # Subset where offsets have been found and kept
   overlap <- c()
   if ( num_f > 1 ){
@@ -124,7 +137,7 @@ for (i in i_choices){
   
   
   
-  ##########################################
+  # 4. ======================= SMOOTH PROFILES ==================================================================== #
   # SMOOTH PROFILES  (weighted by confidence values)
   # Smoothing is weighted by confidence values, so if you make them more different, the convidence values have more affect
   height_offset$confid_nS_strands <- height_offset$confid_n_strands * smoothing_CV_weight 
@@ -145,7 +158,7 @@ for (i in i_choices){
   height_offset$sm50[!is.na(height_offset$offset_CV_strands)] <- predict(loessMod50) 
   
   
-  ##########################################
+  # 5. ======================= REMOVE NO FAULT, RIVER, LOW DENSITY ================================================== #
   # REMOVE where NO FAULT, RIVER, LOW DENSITY
   height_offset$gr <- 0 # Need to change groups so that smoothing lines have gaps in them
   noprof_dist      <- 0 # Find distances where no profiles have been found e.g. rivers, no scarp, low density 
@@ -216,12 +229,15 @@ for (i in i_choices){
   }
   ##########################################
   
-  height_offset$d_km        <- height_offset$dist_along_fault / 1000  # Create distance in km 
-  height_pl_bF_s_list[[8]]  <- height_offset    # Save now with smoothed profiles 
+  # 6. ======================= SAVE RESULTS ======================================================================== #
+  
+  height_offset$d_km          <- height_offset$dist_along_fault / 1000  # Create distance in km 
+  height_pl_bF_s_list[[8]]    <- height_offset    # Save now with smoothed profiles 
   height_pl_bF_s_list[[1]][8] <- 'Height_offset_with_strands'
+  
   # Save Smoothed Profiles 
-  saveRDS ( height_pl_bF_s_list ,  paste0 ( main_results_dir , '/' , off_pla_dir , '/' , fault_name , '_offsets_planes.RDS' ))
-  saveRDS ( scarp_noprofile2     , paste0 ( profiles_dir ,                          '/', fault_name , '_scarp_noprofile.RDS' ))
+  saveRDS ( height_pl_bF_s_list ,  paste0 ( 'Results/Offset_Planes/' , fault_name , '_offsets_planes.RDS'  ))
+  saveRDS ( scarp_noprofile2     , paste0 ( 'Results/Profiles/'      , fault_name , '_scarp_noprofile.RDS' ))
   
   
 }

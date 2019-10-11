@@ -2,14 +2,14 @@
 
 # SCRIPT OUTLINE
 # 1. Set parameters for finding ok landscape planes 
-# 2. Find potential fault planes
-# 3. Save results in 'Results/Profiles/'
+# 2. Find potential landscape planes and confidence values for each profile
+# 3. Save results in 'Results/Offset_Planes/'
 
 
 for (i in i_choices){
   fault_name      <- fault_name_list[i]
 
-    print(paste0('MAIN_2_OFFSETS ',fault_name))
+    print(paste0('MAIN_3_OFFSETS ',fault_name))
     
     profiles_list   <- readRDS ( paste0 ( 'Results/Profiles/',fault_name,'_prof_dist.RDS') )
     scarp_profiles  <- profiles_list[[2]] # Segmented planes
@@ -33,7 +33,7 @@ for (i in i_choices){
     max_resid       <- 15    # Max residuals from planes to points on line 
     
 
-    # 1. ======================= FIND LANDSCAPE PLANES =========================================================== #
+    # 2. ======================= FIND LANDSCAPE PLANES =========================================================== #
     # Initialize variables 
     height_offset_list  <- vector('list',n_fp_combos)
     found_planes.df_list<- vector('list',n_fp_combos)
@@ -228,6 +228,7 @@ for (i in i_choices){
       found_planes.df_list[[fn]] <- found_planes.df
     }
 
+    # 3. ======================= SAVE RESULTS ================================================================== #
     
     list_details <- c ( 'details' , 'height_offset_list' , 'found_planes.df_list' )
     saveRDS ( list ( list_details , height_offset_list , found_planes.df_list ) ,

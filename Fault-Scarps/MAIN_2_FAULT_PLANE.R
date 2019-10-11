@@ -16,6 +16,10 @@ grad_combos              <- expand.grid ( min_grad_multi_choices , min_min_gradi
 
 
 for (i in i_choices) {  # For all faults selected 
+  fault_name      <- fault_name_list[i]
+  downtoside      <- downtoside_list[i]
+  
+  print(paste0('MAIN_2_FAULT_PLANES ',fault_name))
   
   # 2. ======================= FIND FAULT PLANE ================================================================= #
   profiles_list <- readRDS ( paste0 ( 'Results/Profiles/' , fault_name , '_prof_dist.RDS' ) ) # Load profiles (made in MAIN_1_FAULT_DEM_PROF)
@@ -25,7 +29,7 @@ for (i in i_choices) {  # For all faults selected
   for (pr in 1:length(seg_prof)){
     tab        <- data.frame(seg_prof[[pr]][1])
     
-    okp[[pr]]  <- f1_unique_fault_planes(tab,                     # Two other functions are used within here 
+    okp[[pr]]  <- f2_unique_fault_planes(tab,                     # Two other functions are used within here 
                                          grad_combos,
                                          profile_half_width,
                                          downtoside,

@@ -1,13 +1,19 @@
-## Take offsets and plot in order of confidence intervals 
-# Sometimes it's ok if the gradient of planes on either side of the fault are different
-# Sometimes the gradient is quite similar to the fault.... e.g. in Malawi 
+# MAIN_4_CVs
+
+# SCRIPT OUTLINE
+# 0. Load data needed 
+# 1. Find best fault plane parameters (e.g. curvature, gradient) if multiple were used - the one with the most faults found and the best confidence values
+# 2. Remove the worst profiles - those with confidence values less than mean - 2sd. 
+# 3. Plot elevation profiles, fault and lanscape planes, save in 'Figures/Profile_Plots/'
+# 4. Save results in 'Results/Offset_Planes/'
+# 5. Plot offset versus distance results and save figure in 'Figures/'
 
 for (i in i_choices){ 
   fault_name      <- fault_name_list[i]
-
-  print(paste0('MAIN_3_CVs ',fault_name))
   
-  ### LOAD DATA NEEDED ###
+  print(paste0('MAIN_4_CVs ',fault_name))
+  
+  # 0. ======================= LOAD DATA NEEDED  ============================================================== #
   # Original profiles, segmented profiles, distances along fault of profiles, fault planes found
   profiles_list   <- readRDS ( paste0 ( 'Results/Profiles/',fault_name,'_prof_dist.RDS') )
   scarp_profiles  <- profiles_list[[2]]   # Original profiles 
@@ -21,7 +27,7 @@ for (i in i_choices){
   found_planes    <- height_pl_list[[3]]  # Found landscape planes
   
   
-  ## BEST FAULTS ?  
+  # 1. ======================= BEST FAULT PARAMETERS =========================================================== #
   # If multiple variations of fault planes have been found i.e. differeng grad combos, can select the best here
   no_pl_found <- c()   # Number of fault planes found
   conf_mean   <- c()   # Average confidence of planes found 
@@ -39,17 +45,19 @@ for (i in i_choices){
   }
   best_fault       <- ok_faults[which(no_pl_found[ok_faults]==max(no_pl_found[ok_faults]))]
   
+  
   # Now continue with only the best fault planes found 
-  height_offset_b    <- height_offset [[best_fault]]
-  okp_b              <- lapply ( okp_all , function(x) x[[best_fault]])
-  found_planes_b     <- found_planes  [[best_fault]]
+  height_offset_b  <- height_offset [[best_fault]]
+  okp_b            <- lapply ( okp_all , function(x) x[[best_fault]])
+  found_planes_b   <- found_planes  [[best_fault]]
   
   
-  ## Remove those with less than mean - 2*standard deviation 
-  CVlist <- c('confid_dif_l','confid_dif_r','confid_pl_l','confid_pl_r','confid_s_pl')
+  # 2. ======================= REMOVE WORST PROFILES =========================================================== #
+  # Remove those with less than mean - 2*standard deviation 
+  CVlist                      <- c('confid_dif_l','confid_dif_r','confid_pl_l','confid_pl_r','confid_s_pl')
   height_offset_b$confid_s_pl <- max( height_offset_b$confid_s_pl, na.rm = TRUE) -  height_offset_b$confid_s_pl
   
-  
+  # Find ones to keep 
   keep_val_above <- c()
   for (j in 1:length(CVlist)){
     CV_nam         <- CVlist[j]
@@ -67,61 +75,63 @@ for (i in i_choices){
     height_offset_b[paste0(CV_nam,'_n')][good_ind,] <- CV_val_keep
   }
   
-  height_offset_b$confid <- height_offset_b$confid_dif_l_n + height_offset_b$confid_dif_r_n +
+  height_offset_b$confid   <- height_offset_b$confid_dif_l_n + height_offset_b$confid_dif_r_n +
     height_offset_b$confid_pl_l_n + height_offset_b$confid_pl_r_n + height_offset_b$confid_s_pl_n
-  keep_val_above <- mean(height_offset_b$confid,na.rm=TRUE)  - 2 * sd  (height_offset_b$confid,na.rm=TRUE) 
-  keep_val_max   <- mean(height_offset_b$confid,na.rm=TRUE)  + 2 * sd  (height_offset_b$confid,na.rm=TRUE) 
-  good_ind       <- which(height_offset_b$confid >= keep_val_above)
+  keep_val_above           <- mean(height_offset_b$confid,na.rm=TRUE)  - 2 * sd  (height_offset_b$confid,na.rm=TRUE) 
+  keep_val_max             <- mean(height_offset_b$confid,na.rm=TRUE)  + 2 * sd  (height_offset_b$confid,na.rm=TRUE) 
+  good_ind                 <- which(height_offset_b$confid >= keep_val_above)
   height_offset_b$confid_n <- NA
-  height_offset_b$confid_n[good_ind] <- height_offset_b$confid[good_ind]
-  height_offset_b$confid_n[height_offset_b$confid_n>keep_val_max] <- keep_val_max
+  height_offset_b$confid_n [ good_ind ] <- height_offset_b$confid [ good_ind ]
+  height_offset_b$confid_n [ height_offset_b$confid_n > keep_val_max ] <- keep_val_max
   normalization  <- keep_val_max - keep_val_above
   height_offset_b$confid_n <- height_offset_b$confid_n / normalization - keep_val_above / normalization 
   
-  ## ADD offsets_CV column for those remaining within CV
+  # Add offsets_CV column for those remaining within CV
   height_offset_b$offset_CV <- NA
   height_offset_b$offset_CV [ !is.na(height_offset_b$confid_n) ] <- height_offset_b$offset_original [ !is.na(height_offset_b$confid_n) ]
   
-  # ## PLOTS multiplots  ordered CONFIDENCE INTERVALS to choose confidence intervals 
-  # num_plots <- 14
-  # height_offset_b$offset <- height_offset_b$offset_original
-  # plot_multi_arrange ( height_offset_b , num_plots , scarp_profiles , seg_profiles , okp_b , found_planes_b , 'prof_ind'       )
-  # plot_multi_arrange ( height_offset_b , num_plots , scarp_profiles , seg_profiles , okp_b , found_planes_b , 'confid_n'       )
-  # plot_multi_arrange ( height_offset_b , num_plots , scarp_profiles , seg_profiles , okp_b , found_planes_b , 'confid_dif_l_n' )
-  # plot_multi_arrange ( height_offset_b , num_plots , scarp_profiles , seg_profiles , okp_b , found_planes_b , 'confid_dif_r_n' )
-  # plot_multi_arrange ( height_offset_b , num_plots , scarp_profiles , seg_profiles , okp_b , found_planes_b , 'confid_pl_l_n'  )
-  # plot_multi_arrange ( height_offset_b , num_plots , scarp_profiles , seg_profiles , okp_b , found_planes_b , 'confid_pl_r_n'  )
-  # plot_multi_arrange ( height_offset_b , num_plots , scarp_profiles , seg_profiles , okp_b , found_planes_b , 'confid_s_pl_n'  )
-  # plot_multi_arrange ( height_offset_b , num_plots , scarp_profiles , seg_profiles , okp_b , found_planes_b , 'offset_original')
-  # height_offset_b <- subset(height_offset_b, select = -offset)
-  # 
-  # ## PLOTS multiplots AFTER CV SUBSETTING
-  # height_offset_b$offset <- height_offset_b$offset_CV
-  # plot_multi_arrange ( height_offset_b , num_plots , scarp_profiles , seg_profiles , okp_b , found_planes_b , 'prof_ind' )
-  # plot_multi_arrange ( height_offset_b , num_plots , scarp_profiles , seg_profiles , okp_b , found_planes_b , 'confid_n' )
-  # plot_multi_arrange ( height_offset_b , num_plots , scarp_profiles , seg_profiles , okp_b , found_planes_b , 'offset_CV')
-  # height_offset_b <- subset(height_offset_b, select = - offset)
-  # 
-  # 
-  # ## PDF of PLOTS
-  # pdf(file = paste0(main_results_dir,'/',conf_vals_dir,'/',fault_name,'_CVs.pdf'))
-  # plot(multi_scarp_profiles_prof_ind)
-  # plot(multi_height_offset_b_offset_original)
-  # plot(multi_height_offset_b_confid_n)
-  # plot(multi_height_offset_b_confid_dif_l_n)
-  # plot(multi_height_offset_b_confid_dif_r_n)
-  # plot(multi_height_offset_b_confid_pl_l_n)
-  # plot(multi_height_offset_b_confid_pl_r_n)
-  # plot(multi_height_offset_b_confid_s_pl_n)
-  # dev.off()
-  # 
-  # ## PDF of PLOTS SUBSETTED
-  # pdf(file = paste0(main_results_dir,'/',conf_vals_be_dir,'/',fault_name,'_CVsBest.pdf'))
-  # plot(multi_scarp_profiles_prof_ind)
-  # plot(multi_height_offset_b_offset_CV)
-  # plot(multi_height_offset_b_confid_n)
-  # dev.off()
   
+  # 3. ======================= PLOT PROFILES =================================================================== #
+  num_plots <- 14
+  height_offset_b$offset <- height_offset_b$offset_original
+  f4_plot_multi_arrange ( height_offset_b , num_plots , scarp_profiles , seg_profiles , okp_b , found_planes_b , 'prof_ind'       )
+  f4_plot_multi_arrange ( height_offset_b , num_plots , scarp_profiles , seg_profiles , okp_b , found_planes_b , 'confid_n'       )
+  f4_plot_multi_arrange ( height_offset_b , num_plots , scarp_profiles , seg_profiles , okp_b , found_planes_b , 'confid_dif_l_n' )
+  f4_plot_multi_arrange ( height_offset_b , num_plots , scarp_profiles , seg_profiles , okp_b , found_planes_b , 'confid_dif_r_n' )
+  f4_plot_multi_arrange ( height_offset_b , num_plots , scarp_profiles , seg_profiles , okp_b , found_planes_b , 'confid_pl_l_n'  )
+  f4_plot_multi_arrange ( height_offset_b , num_plots , scarp_profiles , seg_profiles , okp_b , found_planes_b , 'confid_pl_r_n'  )
+  f4_plot_multi_arrange ( height_offset_b , num_plots , scarp_profiles , seg_profiles , okp_b , found_planes_b , 'confid_s_pl_n'  )
+  f4_plot_multi_arrange ( height_offset_b , num_plots , scarp_profiles , seg_profiles , okp_b , found_planes_b , 'offset_original')
+  height_offset_b <- subset(height_offset_b, select = -offset)
+  
+  ## PLOTS multiplots AFTER CV SUBSETTING
+  height_offset_b$offset <- height_offset_b$offset_CV
+  f4_plot_multi_arrange ( height_offset_b , num_plots , scarp_profiles , seg_profiles , okp_b , found_planes_b , 'prof_ind' )
+  f4_plot_multi_arrange ( height_offset_b , num_plots , scarp_profiles , seg_profiles , okp_b , found_planes_b , 'confid_n' )
+  f4_plot_multi_arrange ( height_offset_b , num_plots , scarp_profiles , seg_profiles , okp_b , found_planes_b , 'offset_CV')
+  height_offset_b <- subset(height_offset_b, select = - offset)
+  
+  ## PDF of PLOTS
+  pdf(file = paste0('Figures/Profile_Plots/',fault_name,'_profiles_CVs.pdf'))
+  plot(multi_scarp_profiles_prof_ind)
+  plot(multi_height_offset_b_offset_original)
+  plot(multi_height_offset_b_confid_n)
+  plot(multi_height_offset_b_confid_dif_l_n)
+  plot(multi_height_offset_b_confid_dif_r_n)
+  plot(multi_height_offset_b_confid_pl_l_n)
+  plot(multi_height_offset_b_confid_pl_r_n)
+  plot(multi_height_offset_b_confid_s_pl_n)
+  dev.off()
+  
+  ## PDF of PLOTS SUBSETTED
+  pdf(file = paste0('Figures/Profile_Plots/',fault_name,'_profiles_CVsBest.pdf'))
+  plot(multi_scarp_profiles_prof_ind)
+  plot(multi_height_offset_b_offset_CV)
+  plot(multi_height_offset_b_confid_n)
+  dev.off()
+  
+  
+  # 4. ======================= SAVE RESULTS  ================================================================= #
   # Save best fault files
   list_details <- c('details',
                     'height_offset_orig',  'found_planes_orig',  'okp_orig',
@@ -132,38 +142,61 @@ for (i in i_choices){
             paste0 ( 'Results/Offset_Planes/' , fault_name , '_offsets_planes.RDS') )
   
   
-  #  }
+  # 5. ======================= PLOT OFFSET RESULTS  ============================================================ #
+  # Data after subsetted by confidence values 
+  height_pl_bF_s_list <- readRDS ( paste0 ( 'Results/Offset_Planes/' , fault_name , '_offsets_planes.RDS') )
+  height_offset       <- height_pl_bF_s_list[[5]]
+  ho                  <- subset(height_offset, !is.na(offset_CV) & offset_CV!=0)
+  ho$f2               <- ho$f
+  ho$offset_f2        <- ho$offset_CV 
+  ho$confid_f2        <- ho$confid_n
+  
+  ggplot(ho)+
+    geom_point( aes ( x = dist_along_fault/1000 , y = offset_original , color = confid_n ) , size=3)+
+    scale_color_distiller( palette = "Spectral" , direction = -1 , limits = c( 0 , 1.1 )) +
+    ggtitle ( paste(fault_name)) + 
+    xlab    ( 'Distance along Fault, km' ) +
+    ylab    ( 'Vertical Offset, m' ) +
+    labs    ( color='Conf.' ) +
+    theme_linedraw()         +
+    theme(
+      panel.grid   = element_blank(),
+      title        = element_text ( size = 7 , vjust = -0.5 ),
+      axis.title.x = element_text ( size = 8 ),
+      axis.title.y = element_text ( size = 8 ),
+      axis.text    = element_text ( size = 7 ),
+      legend.title = element_text ( size = 7 ), 
+      legend.text  = element_text ( size = 7 ),
+      legend.key.height = unit ( 0.6 , "cm" ),
+      legend.key.width  = unit ( 0.3 , "cm" )
+    ) 
+  
+  p_name <- paste0 ( 'Figures/' , fault_name , '_offsets.pdf' )
+  ggsave ( p_name , width = 190 , height = 190*0.5, units = 'mm' , dpi=600 )
+  
+  # Map View
+  ggplot(ho)+
+    geom_point( aes ( x = lon/1000 , y = lat/1000 , color = confid_n ) , size=3)+
+    scale_color_distiller( palette = "Spectral" , direction = -1 , limits = c( 0 , 1.1 )) +
+    ggtitle ( paste(fault_name)) + 
+    xlab    ( 'Longitude' ) +
+    ylab    ( 'Latitude' ) +
+    labs    ( color='Conf.' ) +
+    theme_linedraw()         +
+    theme(
+      panel.grid   = element_blank(),
+      title        = element_text ( size = 7 , vjust = -0.5 ),
+      axis.title.x = element_text ( size = 8 ),
+      axis.title.y = element_text ( size = 8 ),
+      axis.text    = element_text ( size = 7 ),
+      legend.title = element_text ( size = 7 ), 
+      legend.text  = element_text ( size = 7 ),
+      legend.key.height = unit ( 0.6 , "cm" ),
+      legend.key.width  = unit ( 0.3 , "cm" )
+    )+
+    coord_equal()
+  
+  p_name <- paste0 ( 'Figures/' , fault_name , '_offsets_mapview.pdf' )
+  ggsave ( p_name , width = 190 , units = 'mm' , dpi=600 )
   
 }
-
-## PLOT
-# Data after subsetted by confidence values 
-height_pl_bF_s_list      <- readRDS ( paste0 ( 'Results/Offset_Planes/' , fault_name , '_offsets_planes.RDS') )
-height_offset           <- height_pl_bF_s_list[[5]]
-ho           <- subset(height_offset, !is.na(offset_CV) & offset_CV!=0)
-ho$f2        <- ho$f
-ho$offset_f2 <- ho$offset_CV 
-ho$confid_f2 <- ho$confid_n
-
-ggplot(ho)+
-  geom_point(aes(x=dist_along_fault/1000,y=offset_original,color=confid_n),size=3)+
-  scale_color_distiller(palette = "Spectral",direction = -1,limits=c(0,1.1)) +
-  ggtitle('Zomba Fault') + 
-  xlab('Distance along Fault, km') +
-  ylab('Vertical Offset, m') +
-  labs(color='Conf.') +
-  theme_linedraw()         +
-  theme(
-    panel.grid   = element_blank(),
-    title        = element_text(size = 7,vjust=-0.5),
-    axis.title.x = element_text(size = 8),
-    axis.title.y = element_text(size = 8),
-    axis.text    = element_text(size = 7),
-    legend.title = element_text(size = 7), 
-    legend.text  = element_text(size = 7),
-    legend.key.height = unit(0.6,"cm"),
-    legend.key.width = unit(0.3,"cm")
-  ) 
-
-
-
